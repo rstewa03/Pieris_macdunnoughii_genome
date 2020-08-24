@@ -1,35 +1,32 @@
-# BUSCO assessment
-on Miles. Here is an example command:
-cd /mnt/griffin/chrwhe/Paeg_assembly/10x/assessment
-mkdir busco
-cd busco
-ln -s /mnt/griffin/chrwhe/Paeg_assembly/10x/scaffolding/BESST_output/pass1/Scaffolds_pass1.fa Paeg_v2das.fa
+# on MILES
 
-# define paths
-export PATH=$PATH:/data/programs/bbmap_34.94/:/data/programs/augustus-3.0.1/bin:/data/programs/augustus-3.0.1/scripts
-AUGUSTUS_CONFIG_PATH=/data/programs/augustus-3.0.1/config
-library=/data/programs/busco/insecta_odb9
+################################
 
-# change these for your species specific run
-genome=Paeg_v2das.fa
-outfile=Paeg_v2das_insectaBUSCO
+24 August 2020 working
 
-#run BUSCO analysis
-python /data/programs/busco/scripts/run_BUSCO.py -i $genome -l $library -m genome -o $outfile -c 64
+# standard run with insect SCO genes
 
-more short_summary_Paeg_v2das_insectaBUSCO.txt
-# BUSCO version is: 3.0.2
-# The lineage dataset is: insecta_odb9 (Creation date: 2016-02-13, number of species: 42, number of BUSCOs: 1658)
-# To reproduce this run: python /data/programs/busco/scripts/run_BUSCO.py -i Paeg_v2das.fa -o Paeg_v2das_insectaBUSCO -l /data/programs/busco/insecta_odb9/ -m genome -c 64 -sp fly
-#
-# Summarized benchmarking in BUSCO notation for file Paeg_v2das.fa
-# BUSCO was run in mode: genome
+genome=PmacD_assembly.fasta
+library=insecta_odb9
+outfile=PmacD_assembly_v_lepidoptera_odb10
 
-        C:86.5%[S:86.0%,D:0.5%],F:7.3%,M:6.2%,n:1658
+# parameters
+export BUSCO_CONFIG_FILE=/data/programs/busco-4.1.2/config/config.ini
+python3 /data/programs/busco-4.1.2/bin/busco -i $genome -l $library -m genome -o $outfile -c 30
 
-        1434    Complete BUSCOs (C)
-        1426    Complete and single-copy BUSCOs (S)
-        8       Complete and duplicated BUSCOs (D)
-        121     Fragmented BUSCOs (F)
-        103     Missing BUSCOs (M)
-        1658    Total BUSCO groups searched
+################################
+# depending upon the species, you should also run with Lep specific buscos
+
+genome=PmacD_assembly.fasta
+library=lepidoptera_odb10
+outfile=PmacD_assembly_v_lepidoptera_odb10
+# parameters
+export BUSCO_CONFIG_FILE=/data/programs/busco-4.1.2/config/config.ini
+python3 /data/programs/busco-4.1.2/bin/busco -i $genome -l $library -m genome -o $outfile -c 30
+
+
+# plotting
+https://busco.ezlab.org/busco_userguide.html#companion-scripts
+
+# note that you can generate some simple plots that might be nice for comparing among different assemblies
+# during the process of polishing, etc.
