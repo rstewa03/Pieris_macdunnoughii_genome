@@ -38,3 +38,11 @@ Contigs >= 10 Kbp :        3,391
 Contigs >= 1 Mbp :            10
 N50 value :      181,826
 Generated using /mnt/griffin/racste/PmacD_assembly.fasta
+
+312M  PmacD_Rac4MedPurge.fasta
+
+pigz PmacD_Rac4MedPurge.fasta
+
+89M PmacD_Rac4MedPurge.fasta.gz
+
+scp chrwhe@miles.zoologi.su.se:/mnt/griffin/chrwhe/Pieris_macdunnoughiiPmacD_Rac4MedPurge.fasta.gz .
