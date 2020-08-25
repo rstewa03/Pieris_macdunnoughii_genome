@@ -7,8 +7,8 @@
 # standard run with insect SCO genes
 
 genome=PmacD_assembly.fasta
-library=insecta_odb9
-outfile=PmacD_assembly_v_insecta_odb9
+library=insecta_odb10
+outfile=PmacD_assembly_v_insecta_odb10
 
 # parameters
 export BUSCO_CONFIG_FILE=/data/programs/busco-4.1.2/config/config.ini
