@@ -1,5 +1,6 @@
 # mtDNA genome. NCBI nucleotide search Pararge AND genome
-Pierap_mtDNA.fasta
+Pierap_mtDNA.fasta # HM156697.1
+
 # blast search
 
 # the bait, the mtDNA gene or genome you want to fish with in the database
