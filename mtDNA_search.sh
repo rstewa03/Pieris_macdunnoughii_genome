@@ -1,17 +1,17 @@
 # mtDNA genome. NCBI nucleotide search Pararge AND genome
-https://www.ncbi.nlm.nih.gov/nuccore/635377229?report=fasta
-
+Pierap_mtDNA.fasta
 # blast search
 
 # the bait, the mtDNA gene or genome you want to fish with in the database
-query=Paegeria_mtDNAgenome.fasta
+query=Pierap_mtDNA.fasta
 
 # make the database of the genome assembly in which you want to fish for the mtDNA scaffolds
-database=allpaths.contigs.fasta
-#make database
+ln -s /mnt/griffin/racste/PmacD_Rac4MedPurge.fasta .
+database=PmacD_Rac4MedPurge.fasta
+
 /data/programs/ncbi-blast-n-rmblast-2.2.28+/makeblastdb -in $database -dbtype nucl
 
-# run the blast with two different output formats
+# run  blast with two different output formats
 # blast with two output formats
 /data/programs/ncbi-blast-n-rmblast-2.2.28+/blastn -query "$query" -db "$database" -evalue .00001 -out "$query"_v_"$database".tsv -outfmt 6 -num_threads 20
 /data/programs/ncbi-blast-n-rmblast-2.2.28+/blastn -query "$query" -db "$database" -evalue .00001 -out "$query"_v_"$database".aln -outfmt 2 -num_threads 20
@@ -30,31 +30,49 @@ database=allpaths.contigs.fasta
 11        e-value
 12        bit_score
 
-
-==> Paegeria_mtDNAgenome.fasta_v_allpaths.contigs.fasta.tsv <==
-KJ547676.1      contig_47677    84.98   4747    634     61      7053    11749   4718    1       0.0     4747
-KJ547676.1      contig_47678    87.64   3990    440     42      1       3970    4028    72      0.0     4590
-KJ547676.1      contig_47679    83.94   2335    323     40      3893    6198    2319    8       0.0     2187
-KJ547676.1      contig_7165     93.80   371     22      1       6770    7140    567     936     1e-155   556
-KJ547676.1      contig_24104    98.70   231     3       0       738     968     5927    5697    1e-111   411
-KJ547676.1      contig_54754    98.11   212     4       0       8235    8446    6867    7078    5e-100   372
-KJ547676.1      contig_12130    95.18   228     11      0       1889    2116    1017    790     1e-96    361
-KJ547676.1      contig_35821    95.91   220     7       2       380     598     310     528     5e-95    355
-KJ547676.1      contig_10116    94.12   221     11      2       2443    2662    1042    1261    6e-89    335
-KJ547676.1      contig_54801    97.89   190     4       0       4116    4305    1004    815     3e-87    329
-
+# head Pierap_mtDNA.fasta_v_PmacD_Rac4MedPurge.fasta.tsv 
+# HM156697.1	contig_5550_segment0	93.29	2175	131	12	1	2171	164719	162556	0.0	3193
+# HM156697.1	contig_5550_segment0	90.47	1060	71	27	14111	15156	165763	164720	0.0	1371
+# HM156697.1	contig_5286_segment0	93.16	2077	131	10	1029	3100	237889	239959	0.0	3038
+# HM156697.1	contig_7627_segment0	93.33	405	20	6	13040	13440	30817	31218	3e-166	 592
+# HM156697.1	contig_8_segment0	    89.34	441	41	5	9667	10107	86241	85807	2e-153	 549
+# HM156697.1	contig_6069_segment0	85.79	366	30	9	12054	12416	6846	6500	5e-99	 368
+# HM156697.1	contig_5325_segment0	92.43	251	19	0	3263	3513	232499	232249	3e-96	 359
+# HM156697.1	contig_5613_segment0	80.43	511	52	29	5627	6137	297347	296885	3e-92	 346
+# HM156697.1	contig_6032_segment0	97.85	186	2	2	8006	8190	19956	19772	2e-84	 320
+# HM156697.1	contig_5718_segment0	94.66	206	9	1	3568	3771	113538	113743	6e-84	 318
 
 # after this, one could take the scaffold in your assembly that was identified, and then blast that itself against a database.
 
 # get your scaffold sequence out into a single fasta file that can be used to search in other databases
 # fasta index and fetch using samtools
 # index
-genome=Phoebis_sennae_v1.1_-_scaffolds.fa
-fasta_header=m_scaff_442
+genome=PmacD_Rac4MedPurge.fasta
+fasta_header=contig_5550_segment0
 samtools faidx $genome
 # search and extract
-samtools faidx $genome $fasta_header > $fasta_header.fa
+samtools faidx $genome $fasta_header:162556-164719 > $fasta_header.164719_162556.fa
+samtools faidx $genome $fasta_header:164720-165763 > $fasta_header.164720_165763.fa
+fasta_header=contig_5286_segment0
+samtools faidx $genome $fasta_header:237889-239959 > $fasta_header.237889_239959.fa
 
-# BOLD database for COI gene sequences
+#### P. macdunnoughii config
+query=Pmac_COI.fasta
+/data/programs/ncbi-blast-n-rmblast-2.2.28+/blastn -query "$query" -db "$database" -evalue .00001 -out "$query"_v_"$database".tsv -outfmt 6 -num_threads 20
+/data/programs/ncbi-blast-n-rmblast-2.2.28+/blastn -query "$query" -db "$database" -evalue .00001 -out "$query"_v_"$database".aln -outfmt 2 -num_threads 20
+head Pmac_COI.fasta_v_PmacD_Rac4MedPurge.fasta.tsv 
+# HQ978017.1	contig_5550_segment0	100.00	658	0	0	1	658	163246	162589	0.0	1216
+# HQ978017.1	contig_5286_segment0	99.54	659	2	1	1	658	238339	238997	0.0	1199
+# HQ978017.1	contig_7572_segment0	93.80	274	15	2	386	658	138786	139058	4e-113	 411
+# HQ978017.1	contig_458_segment0	  96.08	102	4	0	225	326	57092	56991	9e-40	 167
+# HQ978017.1	contig_4251_segment0	88.00	75	6	3	238	311	161076	161148	3e-15	86.1
 
-# NCBI for whole mtDNA scaffolds.
+fasta_header=contig_5550_segment0
+samtools faidx $genome $fasta_header:162589-163246 > $fasta_header.162589_163246.fa
+
+fasta_header=contig_5286_segment0
+samtools faidx $genome $fasta_header:238339-238997 > $fasta_header.238339_238997.fa
+
+
+
+
