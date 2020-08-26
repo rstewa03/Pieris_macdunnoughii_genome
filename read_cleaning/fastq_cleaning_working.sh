@@ -16,6 +16,10 @@ scripts/getlog_dna_gzfastq_q20.py
 # in your data file folder with the gz compressed fastq files
 ls *gz > fastq.gz_raw
 
+# NOTE that this should be a list of paired read 1 and read 2 fastq files
+# these shoudl always be the same data, read1 then read2, in the list.
+# so the list shoudl always be divisible by 2, etc.
+
 # run the cleaning script on this subset of files where their paths are indicated
 python /data/programs/scripts/getlog_dna_gzfastq_q20.py fastq.gz_raw
 
