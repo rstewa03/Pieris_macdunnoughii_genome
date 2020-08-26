@@ -11,13 +11,13 @@ parallel -j 15 "pigz {}" ::: *.fastq
 # cleaning the well organized files
 #########
 # the script we will be using
-/data/programs/scripts/getlog_dna_gzfastq_q20.py
+scripts/getlog_dna_gzfastq_q20.py
 
-cd /cerberus/projects/handor/Prap_WGS_2020/sra_data/fastq_raw
-ls *gz | head -4 > fastq.gz_raw_subset
+# in your data file folder with the gz compressed fastq files
+ls *gz > fastq.gz_raw
 
-# run the cleaning script on this subset of files.
-python /data/programs/scripts/getlog_dna_gzfastq_q20.py fastq.gz_raw_subset
+# run the cleaning script on this subset of files where their paths are indicated
+python /data/programs/scripts/getlog_dna_gzfastq_q20.py fastq.gz_raw
 
 # now look at the log.txt file ...
 # I have parsed the file a bit, but the order of things shows you what was done upon the
