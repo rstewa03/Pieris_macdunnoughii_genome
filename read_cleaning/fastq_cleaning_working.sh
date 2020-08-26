@@ -1,45 +1,4 @@
-# files
 
-# lots of fastqc output is here
-/cerberus/projects/handor/Prap_WGS_2020/sra_data/fastqc_dirty
-
-
-# reduce path in terminal prompt
-PS1='${PWD##*/} $ '
-
-# collect fastq files to single folder
-find . -name "*.fastq" | wc -l # 192, which is 96*2, so perfect.
-
-# paths for each fastq file
-find . -name "*.fastq" > fastq_raw_paths
-
-head -2 fastq_raw_paths > fastq_raw_paths_subset
-
-
-# walkting through the list of files and moving them to this new location
-# testing with subset
-while read p; do mv $p /cerberus/projects/handor/Prap_WGS_2020/sra_data/fastq_raw ; done < fastq_raw_paths_subset
-
-# scaling up to the full set of files
-while read p; do mv $p /cerberus/projects/handor/Prap_WGS_2020/sra_data/fastq_raw ; done < fastq_raw_paths
-
-# sanity check
-# go into the folder that we tranferred things into
-cd /cerberus/projects/handor/Prap_WGS_2020/sra_data/fastq_raw
-ls *fastq | wc -l # 192 files were found
-
-# checking the file sizes of these fastq
-ls -lh | more
-
-# these files look a bit small
-401M May  1 03:43 SRR6837638_1.fastq
-401M May  1 03:43 SRR6837638_2.fastq
-
-691M May  4 11:13 SRR6837654_1.fastq
-691M May  4 11:13 SRR6837654_2.fastq
-
-# these need to be re-downloaded and converted.
-pigz SRR6837585_1.fastq
 # test command calls with --dryrun
 # limit the number of jobs run at a time to 15
 parallel --dryrun -j 15 "pigz {}" ::: *.fastq
