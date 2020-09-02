@@ -54,3 +54,25 @@ pigz PmacD_Rac4MedPurge.fasta
 89M PmacD_Rac4MedPurge.fasta.gz
 
 scp chrwhe@miles.zoologi.su.se:/mnt/griffin/chrwhe/Pieris_macdunnoughiiPmacD_Rac4MedPurge.fasta.gz .
+
+
+
+##########
+# 1 Sept
+# latest package from Heiko
+# several assemblies, namely Flye, NECAT and QuickMerge and also a table with the stats.
+# For the first two assemblies we have also included the unpurged contigs.
+# In case you have any questions, simply send em an email.
+
+cd /mnt/griffin/chrwhe/MPI_deliveries
+unzip cs-transfer_31Au2020.zip
+# Archive:  cs-transfer_31Au2020.zip
+#   inflating: PmacD_qmRac4MedPur.fasta
+#   inflating: PmacD_flyeRac4Med.fasta
+#   inflating: PmacD_necatRac4Med.fasta
+#   inflating: PmacD_necatRac4MedPur.fasta
+#   inflating: PmacD_flyeRac4MedPur.fasta
+#   inflating: PmacD_HACassembly_Stats.xlsx
+#   inflating: Assembly protocol in MPICE.docx
+
+scp chrwhe@miles.zoologi.su.se:/mnt/griffin/chrwhe/MPI_deliveries/Assembly* .

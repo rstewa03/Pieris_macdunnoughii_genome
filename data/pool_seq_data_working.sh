@@ -14,7 +14,7 @@
 /cerberus/Reads/leps/P4308/P4308_104/02-FASTQ/160426_ST-E00201_0085_BHLTVFCCXX/	P4308_104_S4_L002_R2_001.fastq.gz			Pieris_napi..15..Hybrid_father.Thorax.20_2.fq.gz	Pieris	napi		15		Hybrid_father	Thorax	20	2	fq.gz			20	0	Scilife	Robot	D448, freezer no.2, drawer 2.8	HISEQX	350	150	P4308	2016-March-04		NO	73310265			452
 
 ssh chrisbak@ren.lan.zoologi.su.se
-yacilebKot1
+
 
 # data
 cd /share/chrisbak/
