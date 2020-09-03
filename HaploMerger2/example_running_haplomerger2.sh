@@ -1,198 +1,136 @@
-Pieris_napi_genome_merge.sh
-
-
-
-# data
--------------------------------
-    AssemblyQC Result
--------------------------------
-Contigs Generated :       59,536
-Maximum Contig Length :  148,845
-Minimum Contig Length :        1
-Average Contig Length :  9,996.6 ± 10,831.6
-Median Contig Length :  10,657.5
-Total Contigs Length :  595,155,545
-Total Number of Non-ATGC Characters :          0
-Percentage of Non-ATGC Characters :        0.000
-Contigs >= 100 bp :       57,728
-Contigs >= 200 bp :       57,414
-Contigs >= 500 bp :       56,620
-Contigs >= 1 Kbp :        55,085
-Contigs >= 10 Kbp :       19,229
-Contigs >= 1 Mbp :             0
-N50 value :       16,210
-Generated using /cerberus/projects/shared_napi_rapae/assemblies/Pieris_napi.FALCON.fasta
-
-
-/data/programs/scripts/AsmQC Pieris_napi_fullAsm.fasta
--------------------------------
-    AssemblyQC Result
--------------------------------
-Contigs Generated :        2,969
-Maximum Contig Length : 15,427,984
-Minimum Contig Length :      109
-Average Contig Length : 117,804.0 ± 1,128,208.3
-Median Contig Length :   2,479.0
-Total Contigs Length :  349,759,982
-Total Number of Non-ATGC Characters :   78,595,876
-Percentage of Non-ATGC Characters :       22.471
-Contigs >= 100 bp :        2,969
-Contigs >= 200 bp :        2,968
-Contigs >= 500 bp :        2,968
-Contigs >= 1 Kbp :         2,841
-Contigs >= 10 Kbp :          581
-Contigs >= 1 Mbp :            37
-N50 value :     12,597,868
-Generated using /cerberus/projects/shared_napi_rapae/assemblies/Pieris_napi_fullAsm.fasta
-
-scp chrwhe@duke.zoologi.su.se:/cerberus/projects/shared_napi_rapae/assemblies/Pieris_napi_fullAsm.fasta .
-
-
-
-# outline
-
-
-1) Merge the PacBio assembly
-  # Take the PacBio assembly by Falcon and run Haplomerger2
-
-2) Combine the result of the PacBio assembly with the P. napi chromonome
-  # using Metassembler with the P. napi chromonome as the primary
-
-3) Polish using the dataset that Naomi identifies for me
-  # she will check a dataset to make sure its good and an individual
-
-
-# location
-cd /cerberus/projects/chrwhe/Pieris_napi_merge
-
-
-# assess the Falcon assembly
-# on MILES
-cd /mnt/griffin/chrwhe/Pieris_napi_merger
-scp chrwhe@duke.zoologi.su.se:/cerberus/projects/shared_napi_rapae/assemblies/Pieris_napi.FALCON.fasta .
-
-
-# define paths
-export PATH=$PATH:/data/programs/bbmap_34.94/:/data/programs/augustus-3.0.1/bin:/data/programs/augustus-3.0.1/scripts
-AUGUSTUS_CONFIG_PATH=/data/programs/augustus-3.0.1/config
-genome=Pieris_napi.FALCON.fasta
-library=/data/programs/busco/insecta_odb9
-outfile=Pieris_napi.FALCON_v2das_insectaBUSCO
-python /data/programs/busco/scripts/run_BUSCO.py -i $genome -l $library -m genome -o $outfile -c 64
-
-# The lineage dataset is: insecta_odb9 (Creation date: 2016-02-13, number of species: 42, number of BUSCOs: 1658)
-# To reproduce this run: python /data/programs/busco/scripts/run_BUSCO.py -i Pieris_napi.FALCON.fasta -o Pieris_napi.FALCON_v2das_insectaBUSCO -l /data/programs/busco/insecta_odb9/ -m genome -c 64 -sp fly
+###################
+# using HaploMerger2
 #
-# Summarized benchmarking in BUSCO notation for file Pieris_napi.FALCON.fasta
-# BUSCO was run in mode: genome
+# which is merging the two haploid genomes in a genome assemlby
+#
+# below is
+	# 1 - setup for HaploMerger2
+	# 2 - a full exmaple of how to do all the steps for a proper merging (cleaning, masking, merging)
+	# 3 - BUSCO and AsmQC shoudl be used to check the genome phenotype before and after
+	# 4 - do not use the tandem repeate removed genome, as this is an experimental step
+###################
+# https://academic.oup.com/bioinformatics/article/33/16/2577/3603547
+# website
+https://github.com/mapleforest/HaploMerger2
 
-        C:83.0%[S:56.2%,D:26.8%],F:7.0%,M:10.0%,n:1658
+###################
+# setup
+# a local installation is needed
+#
+wget https://github.com/mapleforest/HaploMerger2/releases/download/HaploMerger2_20161205/HaploMerger2_20180603.tar.gz
+wget https://github.com/mapleforest/HaploMerger2/releases/download/HaploMerger2_20161205/manual.v3.6.pdf
 
-        1377    Complete BUSCOs (C)
-        932     Complete and single-copy BUSCOs (S)
-        445     Complete and duplicated BUSCOs (D)
-        116     Fragmented BUSCOs (F)
-        165     Missing BUSCOs (M)
-        1658    Total BUSCO groups searched
+# in your working directory
+mkdir software
+cd software
+# get the software, uncompress, go into it
+wget https://github.com/mapleforest/HaploMerger2/releases/download/HaploMerger2_20161205/HaploMerger2_20180603.tar.gz
+tar -zxvf HaploMerger2_20180603.tar.gz
+cd HaploMerger2_20180603
 
-# a very high fraction of duplicated and complete BUSCOS - 26% .... great empiricial evidence that the PacBio assembled effectively
-# the two alternative haploid genomes, given the high het of the sample.
+# settings.
+# A - remove major misjoins from the diploid assembly
+# B - create the haploid assemblies, scaffold using assembly data
+# C - further scaffold the haploid assemblies using MP data
+# D - remove tandem errors from the haploid assembliy (use with caution)
+# E - gap fill
+
+# gather a folder of template run files where I have increased the number of cores up to 32
+cp -R /data/programs/scripts/HaploMerger2_20180603/project_template_32/ .
+
+###################
+# ignore
+# for processes that can extend this far
+# sudo cp -R /mnt/griffin/chrwhe/software/HaploMerger2_20180603/project_template_32/ /data/programs/scripts/HaploMerger2_20180603/project_template_32/
+# /mnt/griffin/chrwhe/software/HaploMerger2_20180603/project_example2$ sudo cp run*batch /data/programs/HaploMerger2_20180603/
+# sudo mv /data/programs/HaploMerger2_20180603/run_all_ed.batch /data/programs/HaploMerger2_20180603/run_ABD.batch
+###################
 
 
-cd /mnt/griffin/chrwhe/Pieris_napi_merger
-mkdir haplomerger2
-cd haplomerger2
-# clean
+
+
+
+###################
+# a full exmaple of how to do all the steps for a proper merging
+# go to your installation of HaploMerger2_20180603
+cd /software/HaploMerger2_20180603
+
+# make a new folder for the genome merging you want to do, here I use "new_genome", but you can use anything
+mkdir new_genome
+cd new_genome
+
+###########
 # clean the genome
+mkdir cleaning
+cd cleaning
 in=../Pieris_napi.FALCON.fasta
 out=Pieris_napi.FALCON.cleaned.fa
 cat $in | /mnt/griffin/chrwhe/software/HaploMerger2_20180603/bin/faDnaPolishing.pl --legalizing \
  --maskShortPortion=1 --noLeadingN --removeShortSeq=1 > $out
+cd ..
 
-# mask genome
-# using RED
+###########
+# mask the genome using RED
 mkdir masking
 cd masking/
-export PATH=/data/programs/RED/redUnix64:/data/programs/RED/redmask-master:$PATH
-ingenome=../Pieris_napi.FALCON.cleaned.fa
+export PATH=/data/programs/RED/redUnix64/:$PATH
+ingenome=../cleaning/Pieris_napi.FALCON.cleaned.fa
 outgenome=Pieris_napi.FALCON.cleaned.masked.fa
-redmask.py -i $ingenome -o $outgenome
+python redmask.py -i $ingenome -o $outgenome > $outgenome.red_results.log
+# see what you got
+more *red_results.log
+# ...
+# Masked genome: /mnt/griffin/chrwhe/Pieris_rapae_v1/genome_fullASM/masking/Pieris_rapae_fullAsm.softmasked.fa
+# Repeat BED file: /mnt/griffin/chrwhe/Pieris_rapae_v1/genome_fullASM/masking/Pieris_rapae_fullAsm.repeats.bed
+# Repeat FASTA file: /mnt/griffin/chrwhe/Pieris_rapae_v1/genome_fullASM/masking/Pieris_rapae_fullAsm.repeats.fasta
+# num scaffolds: 2,772
+# assembly size: 323,179,347 bp
+# masked repeats: 118,710,751 bp (36.73%)
+cd ..
 
-# results
-Masked genome: /mnt/griffin/chrwhe/Pieris_napi_merger/haplomerger2/masking/Pieris_napi.FALCON.cleaned.masked.fa.softmasked.fa
-num scaffolds: 59,438
-assembly size: 595,155,447 bp
-masked repeats: 256,057,279 bp (43.02%)
+###########
+# haplomerger2 run
+# you should now be in your new project folder within /software/HaploMerger2_20180603
+# that is
+# you should be, within this example in /software/HaploMerger2_20180603/new_genome
+# where you have the older folders of cleaning and maksing
+
+# now copy necessary scripts for running scripts A, B and D
+cp ../project_template_32/hm.batchB* ./ ; cp ../project_template_32/hm.batchA* ./ ; cp ../project_template_32/hm.batchD* ./
+# copy necessary scripts for other parts of program
+cp ../project_template/all_lastz.ctl ./ ; cp ../project_template/scoreMatrix.q ./
+# copy a control script for running batches ABD
+cp /data/programs/HaploMerger2_20180603/run_ABD.batch ./
 
 
-# set up haplomerger run
-# do this in my software folder as paths are done, and these are a bit complicated
-cd /mnt/griffin/chrwhe/software/HaploMerger2_20180603
-mkdir Pnap_merge_haploidify
-cd Pnap_merge_haploidify
-cp ../project_template/hm.batchB* ./ ; cp ../project_template/hm.batchA* ./ ; cp ../project_template/hm.batchD* ./
-# changed all these that could be changed, from core = 1 to core = 32
-cp ../project_template/all_lastz.ctl ./ ; cp ../project_template/scoreMatrix.q ./ ; cp ../project_example2/run_all_ed.batch ./
-
-# get the masked genome and rename genome.fa
-cat /mnt/griffin/chrwhe/Pieris_napi_merger/haplomerger2/masking/Pieris_napi.FALCON.cleaned.masked.fa.softmasked.fa > genome.fa
+# copy your cleaned and masked genome here and rename it to genome.fa.
+# this is because the internal haplomerger2 scripts are written to only use
+# a file name "genome.fa", and I have not changed this
+cat ../masking/Pieris_napi.FALCON.cleaned.masked.fa > genome.fa
 # zip it
 gzip genome.fa
-# run
-sh ./run_all_ed.batch >run_all_ed.log 2>&1
+# run haplomerger2 ....
+sh ./run_ABD.batch >run_all_ed.log 2>&1
+
+
+# you should find these output files, among many others
+# they are:
 
 # genome_A.fa.gz ## the diploid assembly with misjoins removed
 # genome_A_ref.fa.gz ## the reference haploid assembly
 # genome_A_alt.fa.gz ## the alternative haploid assembly
-# genome_A_ref_D.fa.gz ## the reference haploid assembly with tandems removed
+# genome_A_ref_D.fa.gz ## the reference haploid assembly with tandems removed (use only with caution)
 
-cd /mnt/griffin/chrwhe/Pieris_napi_merger/haplomerger2
-zcat /mnt/griffin/chrwhe/software/HaploMerger2_20180603/Pnap_merge_haploidify/genome_A_ref.fa.gz > Pieris_napi.FALCON.cleaned.masked.softmasked.haploidA.fa
-zcat /mnt/griffin/chrwhe/software/HaploMerger2_20180603/Pnap_merge_haploidify/genome_A_ref_D.fa.gz > Pieris_napi.FALCON.cleaned.masked.softmasked.haploidA.tndrm.fa
-zcat /mnt/griffin/chrwhe/software/HaploMerger2_20180603/Pnap_merge_haploidify/genome.fa.gz > Pieris_napi.FALCON.cleaned.masked.softmasked.fa
+# you can expand these files to a more appropriate naming, which for my example would be:
+zcat genome.fa.gz > Pieris_napi.FALCON.cleaned.masked.misjoins_rm.fa
+zcat genome_A_ref.fa.gz > Pieris_napi.FALCON.cleaned.masked.haploidA.fa
+zcat genome_A_ref_D.fa.gz > Pieris_napi.FALCON.cleaned.masked.haploidA.tndrm.fa
 
-# assess merger of Falcon
-/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.softmasked.haploidA.fa  │····
--------------------------------
-    AssemblyQC Result
--------------------------------
-Contigs Generated :       24,843
-Maximum Contig Length :  172,617
-Minimum Contig Length :      503
-Average Contig Length : 15,694.8 ± 16,133.8
-Median Contig Length :   4,593.0
-Total Contigs Length :  389,905,419
-Total Number of Non-ATGC Characters :          0
-Percentage of Non-ATGC Characters :        0.000
-Contigs >= 100 bp :       24,843
-Contigs >= 200 bp :       24,843
-Contigs >= 500 bp :       24,843
-Contigs >= 1 Kbp :        24,641
-Contigs >= 10 Kbp :       12,188
-Contigs >= 1 Mbp :             0
-N50 value :       26,338
-Generated using /mnt/griffin/chrwhe/Pieris_napi_merger/haplomerger2_FALCON/Pieris_napi.FALCON.cleaned.masked.softmasked.haploidA.tndrm.fa
-# this is great, just about halved the number of contigs, and have a total assembly that is
-# closer to the expected level.
+###########
+# assess merger
+# e.g.
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.fasta
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.misjoins_rm.fa
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.haploidA.fa
 
-# haplomerger2 on Pieris_napi_fullAsm
-ln -s /mnt/griffin/chrwhe/software/HaploMerger2_20180603/Pnap_haploidify/Pieris_napi_fullAsm.cleaned.masked.haploidA.tndrm.fa .
--------------------------------
-    AssemblyQC Result
--------------------------------
-Contigs Generated :        1,478
-Maximum Contig Length : 15,377,620
-Minimum Contig Length :      548
-Average Contig Length : 230,216.3 ± 1,580,553.8
-Median Contig Length :   5,902.5
-Total Contigs Length :  340,259,761
-Total Number of Non-ATGC Characters :   74,846,293
-Percentage of Non-ATGC Characters :       21.997
-Contigs >= 100 bp :        1,478
-Contigs >= 200 bp :        1,478
-Contigs >= 500 bp :        1,478
-Contigs >= 1 Kbp :         1,418
-Contigs >= 10 Kbp :          355
-Contigs >= 1 Mbp :            38
-N50 value :     12,541,812
-Generated using /mnt/griffin/chrwhe/Pnap_haplomerger/Pieris_napi_fullAsm.cleaned.masked.haploidA.tndrm.fa
+# and also use BUSCO.
