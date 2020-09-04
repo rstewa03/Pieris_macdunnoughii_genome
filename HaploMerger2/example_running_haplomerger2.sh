@@ -122,15 +122,60 @@ sh ./run_ABD.batch >run_all_ed.log 2>&1
 # genome_A_ref_D.fa.gz ## the reference haploid assembly with tandems removed (use only with caution)
 
 # you can expand these files to a more appropriate naming, which for my example would be:
-zcat genome.fa.gz > Pieris_napi.FALCON.cleaned.masked.misjoins_rm.fa
+zcat genome_A.fa.gz > Pieris_napi.FALCON.cleaned.masked.misjoins_rm.fa
 zcat genome_A_ref.fa.gz > Pieris_napi.FALCON.cleaned.masked.haploidA.fa
 zcat genome_A_ref_D.fa.gz > Pieris_napi.FALCON.cleaned.masked.haploidA.tndrm.fa
+# original
+zcat genome.fa.gz > Pieris_napi.FALCON.cleaned.masked.fa
 
 ###########
 # assess merger
 # e.g.
-/data/programs/scripts/AsmQC Pieris_napi.FALCON.fasta
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.fa
 /data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.misjoins_rm.fa
 /data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.haploidA.fa
+
+# for example
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.fa
+-------------------------------
+    AssemblyQC Result
+-------------------------------
+Contigs Generated :       55,093
+Maximum Contig Length :  148,845
+Minimum Contig Length :      338
+Average Contig Length : 10,775.3 ± 10,892.6
+Median Contig Length :  11,366.0
+Total Contigs Length :  593,645,160
+Total Number of Non-ATGC Characters :          0
+Percentage of Non-ATGC Characters :        0.000
+Contigs >= 100 bp :       55,093
+Contigs >= 200 bp :       55,093
+Contigs >= 500 bp :       55,090
+Contigs >= 1 Kbp :        55,085
+Contigs >= 10 Kbp :       19,229
+Contigs >= 1 Mbp :             0
+N50 value :       16,267
+Generated using /mnt/griffin/chrwhe/testing/haplomerger2/HaploMerger2_20180603/test_run/Pieris_napi.FALCON.cleaned.masked.fa
+
+/data/programs/scripts/AsmQC Pieris_napi.FALCON.cleaned.masked.haploidA.fa
+-------------------------------
+    AssemblyQC Result
+-------------------------------
+Contigs Generated :       47,986
+Maximum Contig Length :  148,845
+Minimum Contig Length :      537
+Average Contig Length : 11,613.9 ± 11,363.2
+Median Contig Length :   7,835.5
+Total Contigs Length :  557,302,899
+Total Number of Non-ATGC Characters :          0
+Percentage of Non-ATGC Characters :        0.000
+Contigs >= 100 bp :       47,986
+Contigs >= 200 bp :       47,986
+Contigs >= 500 bp :       47,986
+Contigs >= 1 Kbp :        47,975
+Contigs >= 10 Kbp :       18,478
+Contigs >= 1 Mbp :             0
+N50 value :       17,311
+Generated using /mnt/griffin/chrwhe/testing/haplomerger2/HaploMerger2_20180603/test_run/Pieris_napi.FALCON.cleaned.masked.haploidA.fa
 
 # and also use BUSCO.
