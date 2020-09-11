@@ -9,7 +9,7 @@ ln -s ../../Pieris_rapae_fullAsm.fasta .
 # define a path for the Red software
 export PATH=/data/programs/RED/redUnix64/:$PATH
 # run the script with your genome and output header named (this output header will be used for names of the new files generated).
-python /mnt/griffin/chrwhe/software/redmask/redmask.py -i Pieris_rapae_fullAsm.fasta -o Pieris_rapae_fullAsm > results.log
+python /data/programs/scripts/redmask.py -i Pieris_rapae_fullAsm.fasta -o Pieris_rapae_fullAsm > results.log
 
 # see what you got
 more results.log
@@ -40,4 +40,4 @@ pip install natsort
 # export path to RED
 export PATH=/data/programs/RED/redUnix64/:$PATH
 # run the script.
-python /mnt/griffin/chrwhe/software/redmask/redmask.py -i Pieris_rapae_fullAsm.fasta -o output > results.log
+python /data/programs/scripts/redmask.py -i Pieris_rapae_fullAsm.fasta -o output > results.log
