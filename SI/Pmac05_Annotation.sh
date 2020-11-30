@@ -13,36 +13,6 @@
 ###########################
 
 #  python /mnt/griffin/chrwhe/software/redmask/redmask.py
-# usage: redmask.py [-h] -i GENOME -o OUTPUT [-m MIN] [--training TRAINING]
-#                   [-l WORD_LEN] [-t THRESHOLD] [-g GAUSSIAN] [-c MARKOV_ORDER]
-#                   [--debug] [--version]
-#
-# Wraper for Red - repeat identification and masking for genome annotation
-#
-# optional arguments:
-#   -h, --help                                    show this help message and
-#                                                 exit
-#   -i GENOME, --genome GENOME                    genome assembly FASTA format
-#                                                 (default: None)
-#   -o OUTPUT, --output OUTPUT                    Output basename (default:
-#                                                 None)
-#   -m MIN, --min MIN                             Minimum number of observed
-#                                                 k-mers (default: 3)
-#   --training TRAINING                           Min length for training
-#                                                 (default: 1000)
-#   -l WORD_LEN, --word_len WORD_LEN              word length (kmer length)
-#                                                 (default: None)
-#   -t THRESHOLD, --threshold THRESHOLD           threshold of low adjusted
-#                                                 scores of non-repeats
-#                                                 (default: None)
-#   -g GAUSSIAN, --gaussian GAUSSIAN              Gaussian smoothing width
-#                                                 (default: None)
-#   -c MARKOV_ORDER, --markov_order MARKOV_ORDER  Order of background markov
-#                                                 chain (default: None)
-#   --debug                                       Keep intermediate files
-#                                                 (default: False)
-#   --version                                     show program's version number
-#                                                 and exit
 
 cd $PM_ANNOT/masking
 
