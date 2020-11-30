@@ -24,6 +24,6 @@ $TOOLS/mummer-4.0.0beta2/nucmer --mum -c 100 -t 20 -p $Prefix $Reference $Query
 $TOOLS/mummer-4.0.0beta2/show-coords -r -c -l $Prefix.delta > $Prefix.coords
 cat $Prefix.coords | sed 1,5d | tr -s ' ' | awk 'BEGIN {FS=" "; OFS=","} {;print $1,$2,$4,$5,$7,$8,$10,$12,$13,$18,$19}' > $Prefix.filt.coords
 
-#
+#Input: filt.coords file, lists of the contigs in both assemblies (reference first,query second), identity threshold, alignment length threshold. 
 Rscript /mnt/griffin/racste/circlePlot_nucmerOutput_script.R $Prefix.filt.coords $Ref_contigs $Qry_contigs 90 5000
 ### additional R scripts
