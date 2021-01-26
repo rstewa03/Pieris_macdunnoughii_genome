@@ -8,6 +8,9 @@ export PM_HOME=/mnt/griffin/racste/P_macdunnoughii
 export PM_DATA=$PM_HOME/Pmac_data
 export PM_ALIGN=$PM_HOME/Pmac_alignments
 export PM_REF=$PM_HOME/Pmac_genome_versions
+export PM_ANNOT=$PM_HOME/Pmac_annotations
+export PM_POLISHED=$PM_ALIGN/NGM_genome/PmacD_qmRac4MedPur.cleaned.masked/qmRac4MedPur.cleaned.masked_polish
+
 
 
 ########################################
@@ -24,6 +27,11 @@ cd $PM_REF
 # PmacD_qmRac4MedPur.fasta     FASTA   DNA        238  348,220,470      125  1,463,111.2  14,659,823  274,922  1,147,999  2,200,014        0  2,535,264       0       0
 # PmacD_Rac4MedPurge.fasta     FASTA   DNA      2,348  326,724,712       55    139,150.2   6,815,362   33,841     91,230    165,270        0    239,770       0       0
 
+### Yu later got back to us with two  fast basecalling genomes that were made without the -meta feature enabled
+# PmacD_Flye.fasta                    FASTA   DNA     10,567  431,942,183       15     40,876.5   8,259,670    2,579      6,532     41,446        0    143,108       0       0
+# PmacD_Flye_Polished_Purged.fasta    FASTA   DNA     3,147  320,914,943       46    101,974.9   8,281,812    7,791     60,490    128,479        0    198,669       0       0 
+
+
 ####################################
 #### BUSCO of original versions ####
 ####################################
@@ -31,11 +39,11 @@ cd $PM_REF
 export BUSCO_CONFIG_FILE=/data/programs/busco-4.1.2/config/config.ini
 
 # Run multiple
-library=lepidoptera_odb10
-for i in `ls -1 *fasta | sed 's/.fasta//'`
+library=insecta_odb10
+for i in `ls -1 *.fasta | sed 's/.fasta//'`
 do
 genome=$i.fasta;
-outfile=${i}_v_lepidoptera_odb10;
+outfile=${i}_v_insecta_odb10;
 python3 /data/programs/busco-4.1.2/bin/busco -i $genome -l $library -m genome -o $outfile -c 30;
 done
 
@@ -79,7 +87,7 @@ cd ..
 # mask the genome using RED
 mkdir -p $HM_DIR/masking
 cd $HM_DIR/masking/
-ingenome=$HM_DIR/cleaning/
+ingenome=$HM_DIR/cleaning/PmacD_qmRac4MedPur.cleaned.fa
 outgenome=.
 /data/programs/RED/redUnix64/Red -gnm $ingenome -msk $outgenome -rpt $outgenome -tbl red_results.txt
 # output example: PmacD_qmRac4MedPur.cleaned.msk
@@ -139,16 +147,14 @@ mv *fa final_genomes/
 
 cd $HM_DIR/final_genomes
 
-# check quality 
-/mnt/griffin/racste/Software/seqkit stats *fa -a
+# check quality
+/mnt/griffin/racste/Software/seqkit stats PmacD*fa -a
 # file                                                 format  type  num_seqs      sum_len  min_len      avg_len     max_len       Q1         Q2         Q3  sum_gap        N50  Q20(%)  Q30(%)
 # PmacD_qmRac4MedPur.cleaned.masked.fa                 FASTA   DNA        238  348,220,470      125  1,463,111.2  14,659,823  274,922  1,147,999  2,200,014        0  2,535,264       0       0
 # PmacD_qmRac4MedPur.cleaned.masked.haploidA.fa        FASTA   DNA        106  319,093,312      644  3,010,314.3  14,890,372  557,969  2,096,183  4,606,427        0  5,239,500       0       0
 # PmacD_qmRac4MedPur.cleaned.masked.haploidA.tndrm.fa  FASTA   DNA        106  318,207,461      644  3,001,957.2  14,856,236  545,962  2,096,183  4,593,171        0  5,178,737       0       0
 # PmacD_qmRac4MedPur.cleaned.masked.misjoins_rm.fa     FASTA   DNA        246  348,220,002      314  1,415,528.5  14,659,823  261,958  1,128,227  2,050,900        0  2,421,914       0       0
 
-mkdir BUSCO_summaries
-# Move short summaries into BUSCO_summaries
 # Run BUSCO
 export BUSCO_CONFIG_FILE=/data/programs/busco-4.1.2/config/config.ini
 library=lepidoptera_odb10
@@ -159,11 +165,15 @@ outfile=${i}_v_lepidoptera_odb10;
 python3 /data/programs/busco-4.1.2/bin/busco -i $genome -l $library -m genome -o $outfile -c 30;
 done
 
+
+mkdir BUSCO_summaries
+# Move short summaries into BUSCO_summaries
+python3 /data/programs/busco-4.1.2/scripts/generate_plot.py -wd .
+
 #############################################################
 #### Polish haplomerged genome with illumina short reads ####
 #### See Pmac_read_cleaning.sh, Pmac_mapping.sh #############
 #############################################################
-cd $PM_ALIGN/NGM_genome
 
 ls *sort.bam | parallel -j4 --dry-run "bash /mnt/griffin/racste/Scripts/Pilon_polish_HAC_qm_RMP_hapmerg_hapA.sh {.}.bam"
 
@@ -192,5 +202,182 @@ cd BUSCO_summaries
 # move short summaries into BUSCO_summaries
 python3 /data/programs/busco-4.1.2/scripts/generate_plot.py -wd .
 
-#### Compare polished genomes ####
-/data/programs/mummer-4.0.0beta2/dnadiff -p genome1v2 Pmac_Mums_NGM_qmRac4MedPur.cleaned.masked.haploidA.view.sort.pilon.polish.fasta sample_Pmac000.1_NGM_qmRac4MedPur.cleaned.masked.haploidA.view.sort.pilon.polish.fasta -t 30
+#########################################################
+#### Move/softlink target genome versions to $PM_REF ####
+#########################################################
+
+# remove white space from unpolished genome
+
+
+# Rename chromosomes in each of the three main chromosomes
+# cat Pmac000.1_unpolished.fasta | sed 's/>/>Pmacd_v0.08_/g' > Pmac000.1_unpolished.nh.fasta
+# cat Pmac000.1_polished.fasta | sed 's/>/>Pmacd_v0.09_/g' > Pmac000.1_polished.nh.fasta
+# cat PmacMums_polished.fasta | sed 's/>/>Pmacd_v0.10_/g' > PmacMums_polished.nh.fasta
+# 
+# sed 's/>/>Pmac_v1_/g' > Pmac000.1_polished.ragtag_i80.nh.fasta
+
+
+
+
+################################
+#### Clean degenerate bases ####
+################################
+mdkir $PM_REF/faDnaPolishing
+cd $PM_REF/faDnaPolishing
+
+in=../Pieris_napi_fullAsm.fasta
+out=Pieris_napi_fullAsm.cleaned.fasta
+cat $in | /mnt/griffin/chrwhe/software/HaploMerger2_20180603/bin/faDnaPolishing.pl --legalizing --maskShortPortion=1 --noLeadingN --removeShortSeq=1 > $out
+
+in=../Pmac000.1_polished.fasta
+out=Pmac000.1_polished.cleaned.fasta
+cat $in | /mnt/griffin/chrwhe/software/HaploMerger2_20180603/bin/faDnaPolishing.pl --legalizing --maskShortPortion=1 --noLeadingN --removeShortSeq=1 > $out
+# no degenerate bases
+
+in=../Pmac000.1_unpolished_noBlank.fasta
+out=Pmac000.1_unpolished.cleaned.fasta
+cat $in | /mnt/griffin/chrwhe/software/HaploMerger2_20180603/bin/faDnaPolishing.pl --legalizing --maskShortPortion=1 --noLeadingN --removeShortSeq=1 > $out
+# no degenerate bases
+
+in=../PmacMums_polished.fasta
+out=PmacMums_polished.cleaned.fasta
+cat $in | /mnt/griffin/chrwhe/software/HaploMerger2_20180603/bin/faDnaPolishing.pl --legalizing --maskShortPortion=1 --noLeadingN --removeShortSeq=1 > $out
+
+
+######################
+#### Soft masking ####
+######################
+mkdir $PM_REF/faDnaPolishing/masking
+cd $PM_REF/faDnaPolishing/masking
+
+export PATH=/data/programs/RED/redUnix64/:$PATH
+
+python /mnt/griffin/chrwhe/software/redmask/redmask.py -i ../Pmac000.1_polished.cleaned.fasta -o Pmac000.1_polished.cleaned > Pmac000.1_polished.cleaned.results.log
+
+#     Contigs: 106
+#     Length:  316,067,271 bp
+#     nN50:    5,174,956 bp
+# num scaffolds: 106
+# assembly size: 316,067,271 bp
+# masked repeats: 110,402,935 bp (34.93%)
+
+python /mnt/griffin/chrwhe/software/redmask/redmask.py -i ../Pmac000.1_unpolished.cleaned.fasta -o Pmac000.1_unpolished.cleaned > Pmac000.1_unpolished.cleaned.results.log
+#     Contigs: 106
+#     Length:  319,093,312 bp
+#     nN50:    5,239,500 bp
+# num scaffolds: 106
+# assembly size: 319,093,312 bp
+# masked repeats: 112,367,295 bp (35.21%)
+
+python /mnt/griffin/chrwhe/software/redmask/redmask.py -i ../Pieris_napi_fullAsm.cleaned.fasta -o Pieris_napi_fullAsm.cleaned > Pieris_napi_fullAsm.cleaned.results.log
+#     Contigs: 2,969
+#     Length:  349,759,982 bp
+#     nN50:    12,597,868 bp
+# num scaffolds: 2,969
+# assembly size: 349,759,982 bp
+# masked repeats: 93,152,465 bp (26.63%)
+
+python /mnt/griffin/chrwhe/software/redmask/redmask.py -i ../PmacMums_polished.cleaned.fasta -o PmacMums_polished.cleaned > PmacMums_polished.cleaned.results.log
+#     Contigs: 106
+#     Length:  316,549,294 bp
+#     nN50:    5,202,377 bp
+# num scaffolds: 106
+# assembly size: 316,549,294 bp
+# masked repeats: 110,888,987 bp (35.03%)
+
+
+#################################
+#### Hardmask with bedtools2 ####
+#################################
+# Tool:    bedtools maskfasta (aka maskFastaFromBed)
+# Version: v2.26.0
+# Summary: Mask a fasta file based on feature coordinates.
+#
+# Usage:   bedtools maskfasta [OPTIONS] -fi <fasta> -fo <fasta> -bed <bed/gff/vcf>
+#
+# Options:
+#         -fi     Input FASTA file
+#         -bed    BED/GFF/VCF file of ranges to mask in -fi
+#         -fo     Output FASTA file
+#         -soft   Enforce "soft" masking.  That is, instead of masking with Ns,
+#                 mask with lower-case bases.
+#         -mc     Replace masking character.  That is, instead of masking
+#                 with Ns, use another character.
+
+/data/programs/bedtools2/bin/maskFastaFromBed -fi ../Pieris_napi_fullAsm.cleaned.fasta -fo Pieris_napi_fullAsm.cleaned.hardmasked.fa -bed Pieris_napi_fullAsm.cleaned.repeats.bed
+/data/programs/bedtools2/bin/maskFastaFromBed -fi ../Pmac000.1_polished.cleaned.fasta -fo Pmac000.1_polished.cleaned.hardmasked.fa  -bed Pmac000.1_polished.cleaned.repeats.bed
+/data/programs/bedtools2/bin/maskFastaFromBed -fi ../Pmac000.1_unpolished.cleaned.fasta -fo Pmac000.1_unpolished.cleaned.hardmasked.fa  -bed Pmac000.1_unpolished.cleaned.repeats.bed
+/data/programs/bedtools2/bin/maskFastaFromBed -fi ../PmacMums_polished.cleaned.fasta -fo PmacMums_polished.cleaned.hardmasked.fa  -bed PmacMums_polished.cleaned.repeats.bed
+
+
+############################################
+#### Generate an alignment with Sibeliaz ####
+############################################
+mkdir -p /mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/pseudochromosomal/Pieris_napi_fullAsm_Pmac000.1_polished_out
+cd $PM_REF/pseudochromosomal
+
+# /data/programs/SibeliaZ/SibeliaZ-LCB/bin/sibeliaz  -h
+# Usage: [-k <odd integer>] [-b <integer>] [-m <integer>] [-a <integer>] [-t <integer>] [-f <integer>] [-o <output_directory>] [-n] <input file>
+
+# usage sibeliaz genome1.fa genome2.fa
+# reference and query genomes
+# make sure these are soft masked before running
+# SibeliaZ and TwoPaCo currently do not recognize soft-masked characters (i.e. using lowercase characters), so please convert soft-masked repeats to hard-maksed ones (with Ns) if you would like to mask the repeats explicitly. However, it is not necessary as SibeliaZ uses the abundance parameter -a to filter out high-copy repeats.
+ref_genome=/mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/faDnaPolishing/Pieris_napi_fullAsm.cleaned.fasta
+draft_genome=/mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/faDnaPolishing/Pmac000.1_polished.cleaned.fasta
+out_file=Pieris_napi_fullAsm_Pmac000.1_polished.out
+# this is set to 20 cores, and 500 gb of RAM
+/data/programs/SibeliaZ/SibeliaZ-LCB/bin/sibeliaz -t 20 -f 500 -o $out_file $ref_genome $draft_genome
+
+# may have to move the .maf to the out file?
+# repeat with unpolished
+$PM_REF/pseudochromosomal
+ref_genome=/mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/faDnaPolishing/masking/Pieris_napi_fullAsm.cleaned.hardmasked.fa
+draft_genome=/mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/faDnaPolishing/masking/Pmac000.1_unpolished.cleaned.hardmasked.fa
+out_file=Pieris_napi_fullAsm_Pmac000.1_unpolished.out
+# this is set to 20 cores, and 500 gb of RAM
+/data/programs/SibeliaZ/SibeliaZ-LCB/bin/sibeliaz -t 20 -f 500 -o $out_file $ref_genome $draft_genome
+
+########################################################
+#### Create pseudochromosomal alignment with RagTag ####
+########################################################
+# https://github.com/malonge/RagTag/wiki
+cd $PM_REF/pseudochromosomal/RagTag
+
+# note that you should use soft links into the folder you are working, as it wants to make an index file
+ln -s /mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/faDnaPolishing/Pieris_napi_fullAsm.cleaned.fasta .
+ln -s /mnt/griffin/Pierinae_genomes/Pieris_napi_genome_v1.1/genome/Pieris_napi_fullAsm_chomoOnly.fasta Pieris_napi_fullAsm_chromoOnly.fasta
+ln -s /mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/Pmac000.1_unpolished.fasta .
+ln -s /mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/Pmac000.1_polished.fasta .
+ln -s /mnt/griffin/racste/P_macdunnoughii/Pmac_genome_versions/PmacMums_polished.fasta .
+
+cd $PM_REF/pseudochromosomal/RagTag
+# provide aligner. Uses minimap or nucmer
+export PATH=$PATH:/data/programs/mummer-4.0.0beta2/
+# define reference
+# reference=Pieris_napi_fullAsm.cleaned
+reference=Pieris_napi_fullAsm_chromoOnly
+for i in `ls -1 Pmac*fasta | sed 's/.fasta//'`
+do
+  #defines the query fasta(s)
+  query=$i;
+  #creates a unique prefix
+  prefix=${i}_against_${reference}_i.80;
+  #runs the ragtag script with the reference.fasta and the query.fasta and the outfile named with the prefix
+  python3 /data/programs/RagTag/ragtag_scaffold.py $reference.fasta $i.fasta -o $prefix.out -t 10 --aligner nucmer -i 0.8;
+  # move into the output folder
+  cd $prefix.out;
+  # convert the delta file into a coords table that can be used to make a circos plot
+  #$TOOLS/mummer-4.0.0beta2/show-coords -r -c -l query_against_ref.delta > $prefix.coords;
+  #cat $prefix.coords | sed 1,5d | tr -s ' ' | awk 'BEGIN {FS=" "; OFS=","} {;print $1,$2,$4,$5,$7,$8,$10,$12,$13,$18,$19}' > $prefix.filt.coords;
+  # rename the generic ragtag output with the prefix
+  for k in `ls -1 ragtag*`
+  do
+    mv $k $prefix.$k;
+  done
+  for l in `ls -1 query_against_ref* | sed 's/query_against_ref.//'`
+  do
+    mv query_against_ref.$l $prefix.$l;
+  done
+  cd ..
+done
