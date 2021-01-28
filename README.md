@@ -3,7 +3,7 @@
 # Pieris_macdunnoughii_genome
 Pieris macdunnoughii genome assembly
 
-Release date: #20 August 2020
+Release date: #Private, 28 January 2021
 
 Genomics resources for Pieris macdunnoughii (Pieridae; Lepidoptera)
 
@@ -13,7 +13,7 @@ Genomics resources for Pieris macdunnoughii (Pieridae; Lepidoptera)
 ### Contents ###
 
 + A. How we generated the genome
-+ B. Annotation
++ B. Genome annotation and assessment
 + C. File Listing
 
 ***************************************
