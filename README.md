@@ -24,7 +24,7 @@ Isolated DNA was sequenced using Nanopore MinION. Basecalling was performed with
 
 The Quickmerge genome was further improved with hybrid polishing. We compared two short-read polishing approaches: using Illumina reads from a single indivdual and reads from pooled DNA of 18 individuals. We polished the final unpolished genome with each set of the mapped Illumina short reads using Pilon (v. 1.23, Ref). We compared the polished and unpolished genomes using Seqkit and BUSCO analyses. 
 
-We used mummer (nucmer, ver ref) to align the polished P. macdunnoughii genome to that of Pieris  napi. The alignment file was filtered to retain only those aligned sequences that were longer than 5000 bp and had greater than 90% identity between the two genomes. We further used the P. napi genome as a reference to arrange the polished P. macdunnoughii scaffolds into putative chromosomes for a pseudo-chromosomal assembly using RagTag (Alonge et al. 2019). 
+We used mummer (nucmer) to align the polished P. macdunnoughii genome to that of Pieris  napi. The alignment file was filtered to retain only those aligned sequences that were longer than 5000 bp and had greater than 90% identity between the two genomes. We further used the P. napi genome as a reference to arrange the polished P. macdunnoughii scaffolds into putative chromosomes for a pseudo-chromosomal assembly using RagTag (Alonge et al. 2019). 
 
 
 ***************************************
