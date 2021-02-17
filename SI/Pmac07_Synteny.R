@@ -114,12 +114,14 @@ circos.info()
 #### Figure 2b ####
 # continue with loaded dataframes. 
 #### Focusing on a target scaffold in either reference ####
+
 scaffold <- "Sc0000000_pilon"
 t_per <- 90
-t_len <- 5000
+t_len <- 3000
 
-Alignment6 <- Alignment2 %>% filter((Ref == scaffold | Qry == scaffold) & Percent >= t_per & L1 >= t_len)
-
+Alignment6 <- Alignment2 %>% filter(((Ref == "Chromosome_1" | Ref == "modScaffold_95_1" | Ref == "modScaffold_17_1") & Qry == scaffold) & Percent >= t_per & L1 >= t_len) %>% 
+  mutate(QS2 = lenQ - QS, 
+         QE2 = lenQ -QE)
 
 #### Create vectors for circlize plot ####
 
@@ -157,8 +159,8 @@ for ( i in c(1:dim(Alignment6)[1])){
   RE <- Alignment6$RE[i]
   # QS <- Alignment3$lenQ[i] - Alignment3$QS[i]
   # QE <- Alignment3$lenQ[i] - Alignment3$QE[i]
-  QS <- Alignment6$QS[i]
-  QE <- Alignment6$QE[i]
+  QS <- Alignment6$QS2[i]
+  QE <- Alignment6$QE2[i]
   circos.link(reference, c(RS,RE),
               query, c(QS, QE),
               col = Pal1$color[Pal1$Chr == reference])}
