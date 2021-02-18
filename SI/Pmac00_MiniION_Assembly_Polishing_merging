@@ -1,0 +1,110 @@
+###############################################################################
+#### Flye assembly and Polishing with Racon & Medaka and purging haplotigs ####
+###############################################################################
+
+#$ -S /bin/bash
+
+
+SPECIES=$1
+MinIONseq=$2
+
+# Running Flye 2.8 for draft assembly  with meta-mode polish iteration 2
+/home/ICE/yokamura/anatools/Flye_2.8/Flye/bin/flye --nano-raw $MinIONseq --out-dir $SPECIES.Flye28 --threads 60 -i 2 --meta
+
+
+# Running Racon Polishing
+
+mkdir Racon
+#Polish1
+/home/ICE/yokamura/anaconda3/bin/minimap2 -t 60 -x map-ont ./$SPECIES.Flye28/assembly.fasta $MinIONseq > ./Racon/$SPECIES.FlyeMinION1.paf
+~/anatools/racon -m 8 -x -6 -g -8 -w 500 $MinIONseq ./Racon/$SPECIES.FlyeMinION1.paf ./$SPECIES.Flye28/assembly.fasta -t 60 > ./Racon/$SPECIES.Racon1.fasta
+
+#Polish2
+/home/ICE/yokamura/anaconda3/bin/minimap2 -t 60 -x map-ont ./Racon/$SPECIES.Racon1.fasta $MinIONseq > ./Racon/$SPECIES.FlyeMinION2.paf
+~/anatools/racon -m 8 -x -6 -g -8 -w 500 $MinIONseq ./Racon/$SPECIES.FlyeMinION2.paf ./Racon/$SPECIES.Racon1.fasta -t 60 > ./Racon/$SPECIES.Racon2.fasta
+
+#Polish3
+/home/ICE/yokamura/anaconda3/bin/minimap2 -t 60 -x map-ont ./Racon/$SPECIES.Racon2.fasta $MinIONseq > ./Racon/$SPECIES.FlyeMinION3.paf
+~/anatools/racon -m 8 -x -6 -g -8 -w 500 $MinIONseq ./Racon/$SPECIES.FlyeMinION3.paf ./Racon/$SPECIES.Racon2.fasta -t 60 > ./Racon/$SPECIES.Racon3.fasta
+
+#Polish4
+/home/ICE/yokamura/anaconda3/bin/minimap2 -t 60 -x map-ont ./Racon/$SPECIES.Racon3.fasta $MinIONseq > ./Racon/$SPECIES.FlyeMinION4.paf
+~/anatools/racon -m 8 -x -6 -g -8 -w 500 $MinIONseq ./Racon/$SPECIES.FlyeMinION4.paf ./Racon/$SPECIES.Racon3.fasta -t 60 > ./Racon/$SPECIES.Racon4.fasta
+
+
+
+# Running Medaka Polishing on 4 times Racon Polished assembly with HAC basecalled data
+
+# align reads to assembly and run Medaka consensus
+
+mkdir medaka_consensus
+/opt/software/misc/anaconda/bin/mini_align -i $MinIONseq -r ./Racon/$SPECIES.Racon4.fasta -P -m -p ./medaka_consensus/calls_to_draft -t 60
+
+/opt/software/misc/anaconda/bin/medaka consensus ./medaka_consensus/calls_to_draft.bam ./medaka_consensus/contigs.hdf --model r941_min_high_g344 --threads 8 --batch 200
+
+/opt/software/misc/anaconda/bin/medaka stitch ./medaka_consensus/contigs.hdf ./Racon/$SPECIES.Racon4.fasta ./medaka_consensus/consensus.fasta
+
+
+
+
+#  PURGEHAPLOTGIS
+
+mkdir PURGE
+
+# Deleting problematic symbols from medaka polished geneome file
+# modify the read names
+cat ./medaka_consensus/consensus.fasta | perl -pe 's/\.//g; s/://g' > ./PURGE/${SPECIES}_Rac4Med.fasta
+
+# aligning the reads to the genome
+/home/ICE/yokamura/anaconda3/bin/minimap2 -t 60 -ax map-ont ./PURGE/${SPECIES}_Rac4Med.fasta $MinIONseq --secondary=no  | /home/ICE/yokamura/anaconda3/bin/samtools sort -m 1G -o ./PURGE/aligned.bam -T tmp.ali
+
+/home/ICE/yokamura/anaconda3/bin/purge_haplotigs readhist  -b ./PURGE/aligned.bam -g ./PURGE/${SPECIES}_Rac4Med.fasta -t 14
+
+# check the histogram and set -l -m and -h
+
+/home/ICE/yokamura/anaconda3/bin/purge_haplotigs  contigcov -i aligned.bam.gencov -l 15  -m 55 -h 115
+
+/home/ICE/yokamura/anaconda3/bin/purge_haplotigs  purge -g ./PURGE/${SPECIES}_Rac4Med.fasta -c coverage_stats.csv
+
+# used curated.fasta as a final draft genome
+
+
+
+
+#######################
+#### Running NECAT ####
+#######################
+
+# PmacD_config.txt
+###########################################################
+	PROJECT=PmacD
+	ONT_READ_LIST=../Pieris-MacD-GenX1HAC.fastq.gz
+	GENOME_SIZE=250000000
+	THREADS=60
+	MIN_READ_LENGTH=3000
+	PREP_OUTPUT_COVERAGE=40
+	OVLP_FAST_OPTIONS=-n 500 -z 20 -b 2000 -e 0.5 -j 0 -u 1 -a 1000
+	OVLP_SENSITIVE_OPTIONS=-n 500 -z 10 -e 0.5 -j 0 -u 1 -a 1000
+	CNS_FAST_OPTIONS=-a 2000 -x 4 -y 12 -l 1000 -e 0.5 -p 0.8 -u 0
+	CNS_SENSITIVE_OPTIONS=-a 2000 -x 4 -y 12 -l 1000 -e 0.5 -p 0.8 -u 0
+	TRIM_OVLP_OPTIONS=-n 100 -z 10 -b 2000 -e 0.5 -j 1 -u 1 -a 400
+	ASM_OVLP_OPTIONS=-n 100 -z 10 -b 2000 -e 0.5 -j 1 -u 0 -a 400
+	NUM_ITER=2
+	CNS_OUTPUT_COVERAGE=30
+	CLEANUP=1
+	USE_GRID=false
+	GRID_NODE=0
+	GRID_OPTIONS=
+	SMALL_MEMORY=0
+	FSA_OL_FILTER_OPTIONS=
+	FSA_ASSEMBLE_OPTIONS=
+	FSA_CTG_BRIDGE_OPTIONS=
+	POLISH_CONTIGS=true
+###########################################################
+
+
+~/anatools/NECAT/Linux-amd64/bin/necat.pl correct PmacD_config.txt
+~/anatools/NECAT/Linux-amd64/bin/necat.pl assemble PmacD_config.txt
+~/anatools/NECAT/Linux-amd64/bin/necat.pl bridge PmacD_config.txt
+
+#  used bridged_contigs.fasta for Racon and Medaka Polishing pipeline as above for Flye
