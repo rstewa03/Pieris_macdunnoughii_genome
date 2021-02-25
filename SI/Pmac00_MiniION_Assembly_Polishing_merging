@@ -1,3 +1,4 @@
+
 ###############################################################################
 #### Flye assembly and Polishing with Racon & Medaka and purging haplotigs ####
 ###############################################################################
@@ -78,7 +79,7 @@ cat ./medaka_consensus/consensus.fasta | perl -pe 's/\.//g; s/://g' > ./PURGE/${
 # PmacD_config.txt
 ###########################################################
 	PROJECT=PmacD
-	ONT_READ_LIST=../Pieris-MacD-GenX1HAC.fastq.gz
+	ONT_READ_LIST=read_list.txt
 	GENOME_SIZE=250000000
 	THREADS=60
 	MIN_READ_LENGTH=3000
@@ -103,8 +104,32 @@ cat ./medaka_consensus/consensus.fasta | perl -pe 's/\.//g; s/://g' > ./PURGE/${
 ###########################################################
 
 
+# read_list.txt
+##########################################################
+/home/ICE/yokamura/PmacD/Pieris-MacD-GenX1HAC.fastq.gz
+
+##########################################################
+
 ~/anatools/NECAT/Linux-amd64/bin/necat.pl correct PmacD_config.txt
 ~/anatools/NECAT/Linux-amd64/bin/necat.pl assemble PmacD_config.txt
 ~/anatools/NECAT/Linux-amd64/bin/necat.pl bridge PmacD_config.txt
 
 #  used bridged_contigs.fasta for Racon and Medaka Polishing pipeline as above for Flye
+
+
+############################
+#### Running quickmerge ####
+############################
+
+
+# modifying fasta file into proper format for quickmerge
+ cat  ~/PmacD/NECAT/PURGE/curated.fasta | perl -pe 's/ .*/\r/g'| seqkit seq -w 0 > PmacDNECAT.fasta
+ cat  ~/PmacD/HAC/PURGE/curated.fasta | perl -pe 's/ .*/\r/g'| seqkit seq -w 0 > PmacDFlye.fasta
+
+ 
+#Running quickmerge
+export PATH=/home/ICE/yokamura/anatools/quickmerge:/home/ICE/yokamura/anatools/quickmerge/MUMmer3.23:$PATH
+~/PmacD/HAC/Quick/confirmation$ ~/anatools/quickmerge/merge_wrapper.py PmacDNECAT.fasta PmacDFlye.fasta -l 197436
+
+
+
